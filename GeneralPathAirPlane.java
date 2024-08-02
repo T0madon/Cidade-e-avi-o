@@ -75,49 +75,6 @@ public class GeneralPathAirPlane extends Frame
       geraNuvem(g2d, 190, 200);
       geraNuvem(g2d, 850, 111);
       geraNuvem(g2d, 840, 275);
-      
-      
-//      Ellipse2D.Double el2 = new Ellipse2D.Double(430,270,50,25);;
-////      g2d.draw(el2);
-//      Ellipse2D.Double el3 = new Ellipse2D.Double(450,250,50,25);
-////      g2d.draw(el3);
-//      Ellipse2D.Double el4 = new Ellipse2D.Double(470,270,50,25);
-//      Area e1 = new Area(el2);
-//      Area e2 = new Area(el3);
-//      Area e3 = new Area(el4);
-//      
-//      e1.add(e2);
-//      e1.add(e3);
-//      g2d.draw(e1);
-//      
-//      
-//      Ellipse2D.Double el5 = new Ellipse2D.Double(190,190,50,25);
-////      g2d.draw(el2);
-//      Ellipse2D.Double el6 = new Ellipse2D.Double(210,170,50,25);
-////      g2d.draw(el3);
-//      Ellipse2D.Double el7 = new Ellipse2D.Double(230,190,50,25);
-//      Area e5 = new Area(el5);
-//      Area e6 = new Area(el6);
-//      Area e7 = new Area(el7);
-//      
-//      e5.add(e6);
-//      e5.add(e7);
-//      g2d.draw(e5);
-//      
-//      
-//      Ellipse2D.Double el8 = new Ellipse2D.Double(570,110,50,25);
-////      g2d.draw(el2);
-//      Ellipse2D.Double el9 = new Ellipse2D.Double(590,90,50,25);
-////      g2d.draw(el3);
-//      Ellipse2D.Double el10 = new Ellipse2D.Double(610,110,50,25);
-//      Area e8 = new Area(el8);
-//      Area e9 = new Area(el9);
-//      Area e10 = new Area(el10);
-//      
-//      e8.add(e9);
-//      e8.add(e10);
-//      g2d.draw(e8);
-// 
     
     //PRÉDIOS
     gp.moveTo(50, 400 * 1.5);
