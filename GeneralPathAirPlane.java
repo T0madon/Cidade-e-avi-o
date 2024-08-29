@@ -1,199 +1,240 @@
+package com.mycompany.generalpathairplane;
+
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.geom.*;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class GeneralPathAirPlane extends Frame
-{
-  //Constructor
-  GeneralPathAirPlane()
-  {
-    //Enables the closing of the window.
-    addWindowListener(new MyFinishWindow());
-  }
-  
-  public void desenhaNuvens(Graphics2D g2d){
-      for(int i=0; i<10; i++){
-          int altura = new Random().nextInt(70,310);
-          int distancia = new Random().nextInt(0,30);
-          geraNuvem(g2d, (i*100) + distancia, altura);
-      }
-  }
-  
-  public void geraNuvem(Graphics2D g2d, int x, int y){
-      Ellipse2D.Double el2 = new Ellipse2D.Double(x,y,50,25);
-//      g2d.draw(el2);
-      Ellipse2D.Double el3 = new Ellipse2D.Double(x+20,y-20,50,25);
-//      g2d.draw(el3);
-      Ellipse2D.Double el4 = new Ellipse2D.Double(x+40,y,50,25);
-      Area e1 = new Area(el2);
-      Area e2 = new Area(el3);
-      Area e3 = new Area(el4);
-      
-      e1.add(e2);
-      e1.add(e3);
-      g2d.draw(e1);
-  }
+public class GeneralPathAirPlane extends Frame implements KeyListener {
+    private int airplaneY =80;  // Coordenada Y inicial do avião
+    private final int airplaneX =50;  // Coordenada X fixa do avião
+    private int backgroundX =0; //Coordenada X do cenário de fundo
+    private int sceneSpeed =5; 
+    private boolean isRunning = true;
+    private int score = 0;// Placar 
 
+    // Flags para controle de movimento
+    private boolean movingUp = false;
+    private boolean movingDown = false;
 
-  public void paint(Graphics g)
-  {
-    Graphics2D g2d = (Graphics2D) g;
+    private final ArrayList<Area> buildings = new ArrayList<>();
+    private final ArrayList<Area> clouds = new ArrayList<>();
 
-    //Use of antialiasing to have nicer lines.
-    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+    private Image bufferImage; 
+    private Graphics bufferGraphics;
 
-    //The lines should have a thickness of 3.0 instead of 1.0.
-    BasicStroke bs = new BasicStroke(3.0f);
-    g2d.setStroke(bs);
+    // Constructor
+    public GeneralPathAirPlane() {
+        addWindowListener(new MyFinishWindow());
+        addKeyListener(this);
 
-    //The GeneralPath to decribe the plane.
-    //Avião comprimento: 110 altura: 40
-    GeneralPath gp = new GeneralPath();
-      gp.moveTo(50, 80);
-      gp.lineTo(50,110);
-      gp.lineTo(90,110);
-      gp.lineTo(90,120);
-      gp.lineTo(130,110);
-      gp.lineTo(160,110);
-      gp.curveTo(160, 100, 130 , 90, 140, 90);
-      gp.lineTo(70,90);
-      gp.lineTo(50,80);
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (isRunning) {
+                    backgroundX -= sceneSpeed;
+                    if (backgroundX<=-470) {
+                        backgroundX=0;
+                    }
+                    // Movimento do avião
+                    if (movingUp){
+                        airplaneY-=5;
+                    }
+                    if (movingDown){
+                        airplaneY += 5;
+                    }
 
-      //Função para criar nuvens
-      
-      
-      //NUVENS
-      geraNuvem(g2d, 90, 150);
-      geraNuvem(g2d, 95, 270);
-      geraNuvem(g2d, 330, 75);
-      geraNuvem(g2d, 310, 283);
-      geraNuvem(g2d, 490, 190);
-      geraNuvem(g2d, 620, 315);
-      geraNuvem(g2d, 670, 95);
-      geraNuvem(g2d, 710, 240);
-      geraNuvem(g2d, 500, 350);
-      geraNuvem(g2d, 190, 200);
-      geraNuvem(g2d, 850, 111);
-      geraNuvem(g2d, 840, 275);
+                    checkCollision();
+                    score++;  // Incrementa o placar a cada ciclo
+                    sceneSpeed = 5 + score / 100;  // Aumenta a velocidade pelo placar 
+                    repaint(); // Re-renderiza a tela
+                }
+            }
+        }, 0, 50);  // Atualiza a cada 50 ms
+    }
     
-    //PRÉDIOS
-    gp.moveTo(50, 400 * 1.5);
-    gp.lineTo(50, 310 * 1.5);
-    gp.lineTo(90,310 * 1.5);
-    gp.lineTo(90,370 * 1.5);
-    gp.lineTo(110,370 * 1.5);
-    gp.lineTo(110,290 * 1.5);
-    gp.lineTo(150,290 * 1.5);
-    gp.lineTo(150,330 * 1.5);
-    gp.lineTo(190,330 * 1.5);
-    gp.lineTo(190,230 * 1.5);
-    gp.lineTo(230,250 * 1.5);
-    gp.lineTo(230,350 * 1.5);
-    gp.lineTo(250,350 * 1.5);
-    gp.lineTo(250,290 * 1.5);
-    gp.lineTo(290,290 * 1.5);
-    gp.lineTo(290,310 * 1.5);
-    gp.lineTo(330,310 * 1.5);
-    gp.lineTo(330,240 * 1.5);
-    gp.lineTo(350,210 * 1.5);
-    gp.lineTo(370,240 * 1.5);
-    gp.lineTo(370,290 * 1.5);
-    gp.lineTo(410,290 * 1.5);
-    gp.lineTo(410,370 * 1.5);
-    gp.lineTo(430,370 * 1.5);
-    gp.lineTo(430,260 * 1.5);
-    gp.lineTo(470,260 * 1.5);
-    gp.lineTo(470,330 * 1.5);
-    gp.lineTo(500,330 * 1.5);
-    
-    gp.lineTo(50 + 490, 310 * 1.5);
-    gp.lineTo(90 + 490,310 * 1.5);
-    gp.lineTo(90 + 490,370 * 1.5);
-    gp.lineTo(110 + 490,370 * 1.5);
-    gp.lineTo(110 + 490,290 * 1.5);
-    gp.lineTo(150 + 490,290 * 1.5);
-    gp.lineTo(150 + 490,330 * 1.5);
-    gp.lineTo(190 + 490,330 * 1.5);
-    gp.lineTo(190 + 490,230 * 1.5);
-    gp.lineTo(230 + 490,250 * 1.5);
-    gp.lineTo(230 + 490,350 * 1.5);
-    gp.lineTo(250 + 490,350 * 1.5);
-    gp.lineTo(250 + 490,290 * 1.5);
-    gp.lineTo(290 + 490,290 * 1.5);
-    gp.lineTo(290 + 490,310 * 1.5);
-    gp.lineTo(330 + 490,310 * 1.5);
-    gp.lineTo(330 + 490,240 * 1.5);
-    gp.lineTo(350 + 490,210 * 1.5);
-    gp.lineTo(370 + 490,240 * 1.5);
-    gp.lineTo(370 + 490,290 * 1.5);
-    gp.lineTo(410 + 490,290 * 1.5);
-    gp.lineTo(410 + 490,370 * 1.5);
-    gp.lineTo(430 + 490,370 * 1.5);
-    gp.lineTo(430 + 490,260 * 1.5);
-    gp.lineTo(470 + 490,260 * 1.5);
-    gp.lineTo(470 + 490,330 * 1.5);
-    gp.lineTo(500 + 490,330 * 1.5);
-    
-    g2d.draw(gp);
+    private void checkCollision() {
+        Area airplane = createAirplaneArea(airplaneX, airplaneY);
 
+        for (Area building : buildings) {
+            Area intersection = (Area) airplane.clone();
+            intersection.intersect(building);
+            if (!intersection.isEmpty()) {
+                isRunning = false;
+                return; // Colisão com prédio
+            }
+        }
 
-    g2d.setStroke(new BasicStroke(1.0f));
-    //Draw a coordinate system.
-    drawSimpleCoordinateSystem(1000,600,g2d);
-
-  }
-
-
-
-  /**
-  * Draws a coordinate system (according to the window coordinates).
-  *
-  * @param xmax     x-coordinate to which the x-axis should extend.
-  * @param ymax     y-coordinate to which the y-axis should extend.
-  * @param g2d      Graphics2D object for drawing.
-  */
-  public static void drawSimpleCoordinateSystem(int xmax, int ymax,
-                                                Graphics2D g2d)
-  {
-    int xOffset = 30; //tava 30
-    int yOffset = 50; //tava 50
-    int step = 20;
-    String s;
-    //Remember the actual font.
-    Font fo = g2d.getFont();
-    //Use a small font.
-    g2d.setFont(new Font("sansserif",Font.PLAIN,9));
-    //x-axis.
-    g2d.drawLine(xOffset,yOffset,xmax,yOffset);
-    //Marks and labels for the x-axis.
-    for (int i=xOffset+step; i<=xmax; i=i+step)
-    {
-      g2d.drawLine(i,yOffset-2,i,yOffset+2);
-      g2d.drawString(String.valueOf(i),i-7,yOffset-7);
+        for (Area cloud : clouds) {
+            Area intersection = (Area) airplane.clone();
+            intersection.intersect(cloud);
+            if (!intersection.isEmpty()) {
+                isRunning = false;
+                return; // Bateu na nuvem
+            }
+        }
     }
 
-    //y-axis.
-    g2d.drawLine(xOffset,yOffset,xOffset,ymax);
+    public void geraNuvem(Graphics2D g2d, int x, int y) {
+        Ellipse2D.Double el2 = new Ellipse2D.Double(x, y, 50, 25);
+        Ellipse2D.Double el3 = new Ellipse2D.Double(x + 20, y - 20, 50, 25);
+        Ellipse2D.Double el4 = new Ellipse2D.Double(x + 40, y, 50, 25);
+        Area e1 = new Area(el2);
+        Area e2 = new Area(el3);
+        Area e3 = new Area(el4);
 
-    //Marks and labels for the y-axis.
-    s=" "; //for indention of numbers < 100
-    for (int i=yOffset+step; i<=ymax; i=i+step)
-    {
-      g2d.drawLine(xOffset-2,i,xOffset+2,i);
-      if (i>1000){s="";}
-      g2d.drawString(s+String.valueOf(i),xOffset-25,i+5);
+        e1.add(e2);
+        e1.add(e3);
+        g2d.setColor(new Color(255, 255, 255, 180));
+        g2d.fill(e1);
+
+        clouds.add(e1);
     }
 
-    //Reset to the original font.
-    g2d.setFont(fo);
-  }
+    public void geraCidade(Graphics2D g2d, int x) {
+        GeneralPath gp = new GeneralPath();
 
+        gp.moveTo(30 + x,330 * 1.5);
+        gp.lineTo(50 + x,330 * 1.5);
+        gp.lineTo(50 + x,310 * 1.5);
+        gp.lineTo(90 + x,310 * 1.5);
+        gp.lineTo(90 + x,370 * 1.5);
+        gp.lineTo(110 + x, 370 * 1.5);
+        gp.lineTo(110 + x, 290 * 1.5);
+        gp.lineTo(150 + x, 290 * 1.5);
+        gp.lineTo(150 + x, 330 * 1.5);
+        gp.lineTo(190 + x, 330 * 1.5);
+        gp.lineTo(190 + x, 230 * 1.5);
+        gp.lineTo(230 + x, 250 * 1.5);
+        gp.lineTo(230 + x, 350 * 1.5);
+        gp.lineTo(250 + x, 350 * 1.5);
+        gp.lineTo(250 + x, 290 * 1.5);
+        gp.lineTo(290 + x, 290 * 1.5);
+        gp.lineTo(290 + x, 310 * 1.5);
+        gp.lineTo(330 + x, 310 * 1.5);
+        gp.lineTo(330 + x, 240 * 1.5);
+        gp.lineTo(350 + x, 210 * 1.5);
+        gp.lineTo(370 + x, 240 * 1.5);
+        gp.lineTo(370 + x, 290 * 1.5);
+        gp.lineTo(410 + x, 290 * 1.5);
+        gp.lineTo(410 + x, 370 * 1.5);
+        gp.lineTo(430 + x, 370 * 1.5);
+        gp.lineTo(430 + x, 260 * 1.5);
+        gp.lineTo(470 + x, 260 * 1.5);
+        gp.lineTo(470 + x, 330 * 1.5);
+        gp.lineTo(500 + x, 330 * 1.5);
 
-   public static void main(String[] argv)
-  {
-    GeneralPathAirPlane f = new GeneralPathAirPlane();
-    f.setTitle("GeneralPath example");
-    f.setSize(1000,600);
-    f.setVisible(true);
-  }
+        g2d.setColor(new Color(102,102,153));
+        g2d.fill(gp);
+
+        buildings.add(new Area(gp));
+    }
+    private Area createAirplaneArea(int x, int y) {
+        GeneralPath gp = new GeneralPath();
+        gp.moveTo(x, y);
+        gp.lineTo(x, y + 30);
+        gp.lineTo(x + 40, y + 30);
+        gp.lineTo(x + 40, y + 40);
+        gp.lineTo(x + 80, y + 30);
+        gp.lineTo(x + 110, y + 30);
+        gp.curveTo(x + 110, y+20, x+80, y+10, x+90, y+10);
+        gp.lineTo(x+20, y+10);
+        gp.lineTo(x,y);
+        return new Area(gp);
+    }
+    @Override
+    public void update(Graphics g) {
+        if (bufferImage ==null) {
+            bufferImage =createImage(getWidth(),getHeight());
+            bufferGraphics = bufferImage.getGraphics();
+        }
+        bufferGraphics.setColor(getBackground());
+        bufferGraphics.fillRect(0,0, getWidth(), getHeight());
+        bufferGraphics.setColor(getForeground());
+        paint(bufferGraphics);
+
+        g.drawImage(bufferImage,0,0,this);
+    }
+    @Override
+    public void paint(Graphics g) {
+        Graphics2D g2d= (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        BasicStroke bs= new BasicStroke(3.0f);
+        g2d.setStroke(bs);
+
+        // Fundo do céu
+        g2d.setPaint(new GradientPaint(0, 0, new Color(135, 206, 250),0,getHeight(),new Color(0, 102,204)));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+
+        // Desenha o avião
+        Area airplane = createAirplaneArea(airplaneX, airplaneY);
+        g2d.setColor(new Color(255,69,0));
+        g2d.fill(airplane);
+        buildings.clear();
+        clouds.clear();
+        geraCidade(g2d, backgroundX);
+        geraCidade(g2d, backgroundX + 470);
+       
+        // NUVENS
+        geraNuvem(g2d, 90+ backgroundX, 150);
+        geraNuvem(g2d, 195 + backgroundX, 210);
+        geraNuvem(g2d, 330 + backgroundX, 75);
+        geraNuvem(g2d, 310+ backgroundX, 283);
+        geraNuvem(g2d, 430+ backgroundX, 250);
+        geraNuvem(g2d, 490+ backgroundX, 210); 
+        geraNuvem(g2d, 610+ backgroundX, 150);
+        
+        geraNuvem(g2d, 90+ backgroundX+650, 150);
+        geraNuvem(g2d, 195 + backgroundX+650, 210);
+        geraNuvem(g2d, 330 + backgroundX+650, 75);
+        geraNuvem(g2d, 310+ backgroundX+650, 283);
+        geraNuvem(g2d, 430+ backgroundX+650, 250);
+        geraNuvem(g2d, 490+ backgroundX+650, 210); 
+        geraNuvem(g2d, 610+ backgroundX+650, 150);
+        
+        g2d.setFont(new Font("Arial", Font.BOLD, 24));
+        g2d.setColor(Color.BLACK);
+        g2d.drawString("Score: " + score, 10, 50);
+        
+        if (!isRunning) {
+            g2d.setFont(new Font("Arial", Font.BOLD, 40));
+            g2d.setColor(Color.RED);
+            g2d.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
+        }
+    }
+    @Override
+    public void keyPressed(KeyEvent e){
+        int key = e.getKeyCode();
+
+        if(key==KeyEvent.VK_UP){
+            movingUp = true;
+        }
+        if(key==KeyEvent.VK_DOWN){
+            movingDown = true;
+        }
+    }
+    @Override
+    public void keyReleased(KeyEvent e) {
+        int key = e.getKeyCode();
+
+        if (key==KeyEvent.VK_UP) {
+            movingUp = false;
+        }
+        if (key == KeyEvent.VK_DOWN) {
+            movingDown = false;
+        }
+    }
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+    public static void main(String[] args) {
+        GeneralPathAirPlane gp = new GeneralPathAirPlane();
+        gp.setSize(470, 500);
+        gp.setTitle("General Path Airplane");
+        gp.setVisible(true);
+    }
 }
