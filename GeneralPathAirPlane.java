@@ -9,12 +9,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GeneralPathAirPlane extends Frame implements KeyListener {
-    private int airplaneY =80;  // Coordenada Y inicial do avião
-    private final int airplaneX =50;  // Coordenada X fixa do avião
-    private int backgroundX =0; //Coordenada X do cenário de fundo
-    private int sceneSpeed =5; 
+    private int airplaneY = 80;  // Coordenada Y inicial do avião
+    private final int airplaneX = 50;  // Coordenada X fixa do avião
+    private int backgroundX = 0; // Coordenada X do cenário de fundo
+    private int sceneSpeed = 5; 
     private boolean isRunning = true;
-    private int score = 0;// Placar 
+    private int score = 0;  // Placar 
 
     // Flags para controle de movimento
     private boolean movingUp = false;
@@ -22,6 +22,7 @@ public class GeneralPathAirPlane extends Frame implements KeyListener {
 
     private final ArrayList<Area> buildings = new ArrayList<>();
     private final ArrayList<Area> clouds = new ArrayList<>();
+    private final ArrayList<Point> presents = new ArrayList<>(); // Lista de presentes
 
     private Image bufferImage; 
     private Graphics bufferGraphics;
@@ -37,26 +38,40 @@ public class GeneralPathAirPlane extends Frame implements KeyListener {
             public void run() {
                 if (isRunning) {
                     backgroundX -= sceneSpeed;
-                    if (backgroundX<=-470) {
-                        backgroundX=0;
+                    if (backgroundX <= -470) {
+                        backgroundX = 0;
                     }
                     // Movimento do avião
-                    if (movingUp){
-                        airplaneY-=5;
+                    if (movingUp) {
+                        airplaneY -= 5;
                     }
-                    if (movingDown){
+                    if (movingDown) {
                         airplaneY += 5;
                     }
 
                     checkCollision();
                     score++;  // Incrementa o placar a cada ciclo
-                    sceneSpeed = 5 + score / 100;  // Aumenta a velocidade pelo placar 
+                    sceneSpeed = 5 + (2 * score) / 100;  // Aumenta a velocidade pelo placar 
+                    updatePresents();  // Atualiza a posição dos presentes
                     repaint(); // Re-renderiza a tela
                 }
             }
         }, 0, 50);  // Atualiza a cada 50 ms
     }
     
+    private void updatePresents() {
+        // Move os presentes para baixo
+        for (int i = 0; i < presents.size(); i++) {
+            Point present = presents.get(i);
+            present.y += 5;  // Movimento do presente caindo
+            // Remove o presente se sair da tela
+            if (present.y > getHeight()) {
+                presents.remove(i);
+                i--;
+            }
+        }
+    }
+
     private void checkCollision() {
         Area airplane = createAirplaneArea(airplaneX, airplaneY);
 
@@ -98,11 +113,11 @@ public class GeneralPathAirPlane extends Frame implements KeyListener {
     public void geraCidade(Graphics2D g2d, int x) {
         GeneralPath gp = new GeneralPath();
 
-        gp.moveTo(30 + x,330 * 1.5);
-        gp.lineTo(50 + x,330 * 1.5);
-        gp.lineTo(50 + x,310 * 1.5);
-        gp.lineTo(90 + x,310 * 1.5);
-        gp.lineTo(90 + x,370 * 1.5);
+        gp.moveTo(30 + x, 330 * 1.5);
+        gp.lineTo(50 + x, 330 * 1.5);
+        gp.lineTo(50 + x, 310 * 1.5);
+        gp.lineTo(90 + x, 310 * 1.5);
+        gp.lineTo(90 + x, 370 * 1.5);
         gp.lineTo(110 + x, 370 * 1.5);
         gp.lineTo(110 + x, 290 * 1.5);
         gp.lineTo(150 + x, 290 * 1.5);
@@ -128,11 +143,12 @@ public class GeneralPathAirPlane extends Frame implements KeyListener {
         gp.lineTo(470 + x, 330 * 1.5);
         gp.lineTo(500 + x, 330 * 1.5);
 
-        g2d.setColor(new Color(102,102,153));
+        g2d.setColor(new Color(102, 102, 153));
         g2d.fill(gp);
 
         buildings.add(new Area(gp));
     }
+
     private Area createAirplaneArea(int x, int y) {
         GeneralPath gp = new GeneralPath();
         gp.moveTo(x, y);
@@ -141,96 +157,109 @@ public class GeneralPathAirPlane extends Frame implements KeyListener {
         gp.lineTo(x + 40, y + 40);
         gp.lineTo(x + 80, y + 30);
         gp.lineTo(x + 110, y + 30);
-        gp.curveTo(x + 110, y+20, x+80, y+10, x+90, y+10);
-        gp.lineTo(x+20, y+10);
-        gp.lineTo(x,y);
+        gp.curveTo(x + 110, y + 20, x + 80, y + 10, x + 90, y + 10);
+        gp.lineTo(x + 20, y + 10);
+        gp.lineTo(x, y);
         return new Area(gp);
     }
+
+    private void dropPresent() {
+        // Lança um presente na posição atual do avião
+        presents.add(new Point(airplaneX + 40, airplaneY + 20));
+    }
+
     @Override
     public void update(Graphics g) {
-        if (bufferImage ==null) {
-            bufferImage =createImage(getWidth(),getHeight());
+        if (bufferImage == null) {
+            bufferImage = createImage(getWidth(), getHeight());
             bufferGraphics = bufferImage.getGraphics();
         }
         bufferGraphics.setColor(getBackground());
-        bufferGraphics.fillRect(0,0, getWidth(), getHeight());
+        bufferGraphics.fillRect(0, 0, getWidth(), getHeight());
         bufferGraphics.setColor(getForeground());
         paint(bufferGraphics);
 
-        g.drawImage(bufferImage,0,0,this);
+        g.drawImage(bufferImage, 0, 0, this);
     }
+
     @Override
     public void paint(Graphics g) {
-        Graphics2D g2d= (Graphics2D) g;
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        BasicStroke bs= new BasicStroke(3.0f);
+        BasicStroke bs = new BasicStroke(3.0f);
         g2d.setStroke(bs);
 
         // Fundo do céu
-        g2d.setPaint(new GradientPaint(0, 0, new Color(135, 206, 250),0,getHeight(),new Color(0, 102,204)));
+        g2d.setPaint(new GradientPaint(0, 0, new Color(135, 206, 250), 0, getHeight(), new Color(0, 102, 204)));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
         // Desenha o avião
         Area airplane = createAirplaneArea(airplaneX, airplaneY);
-        g2d.setColor(new Color(255,69,0));
+        g2d.setColor(new Color(255, 69, 0));
         g2d.fill(airplane);
+
+        // Desenha os presentes
+        g2d.setColor(Color.GREEN);
+        for (Point present : presents) {
+            g2d.fillRect(present.x, present.y, 10, 10);  // Desenha o presente como um quadrado
+        }
+
         buildings.clear();
         clouds.clear();
         geraCidade(g2d, backgroundX);
         geraCidade(g2d, backgroundX + 470);
-       
+
         // NUVENS
-        geraNuvem(g2d, 90+ backgroundX, 150);
+        geraNuvem(g2d, 90 + backgroundX, 150);
         geraNuvem(g2d, 195 + backgroundX, 210);
         geraNuvem(g2d, 330 + backgroundX, 75);
-        geraNuvem(g2d, 310+ backgroundX, 283);
-        geraNuvem(g2d, 430+ backgroundX, 250);
-        geraNuvem(g2d, 490+ backgroundX, 210); 
-        geraNuvem(g2d, 610+ backgroundX, 150);
-        
-        geraNuvem(g2d, 90+ backgroundX+650, 150);
-        geraNuvem(g2d, 195 + backgroundX+650, 210);
-        geraNuvem(g2d, 330 + backgroundX+650, 75);
-        geraNuvem(g2d, 310+ backgroundX+650, 283);
-        geraNuvem(g2d, 430+ backgroundX+650, 250);
-        geraNuvem(g2d, 490+ backgroundX+650, 210); 
-        geraNuvem(g2d, 610+ backgroundX+650, 150);
-        
+        geraNuvem(g2d, 310 + backgroundX, 283);
+        geraNuvem(g2d, 430 + backgroundX, 250);
+        geraNuvem(g2d, 490 + backgroundX, 210);
+        geraNuvem(g2d, 610 + backgroundX, 150);
+
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         g2d.setColor(Color.BLACK);
         g2d.drawString("Score: " + score, 10, 50);
-        
+
         if (!isRunning) {
             g2d.setFont(new Font("Arial", Font.BOLD, 40));
             g2d.setColor(Color.RED);
             g2d.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
         }
     }
+
     @Override
-    public void keyPressed(KeyEvent e){
+    public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if(key==KeyEvent.VK_UP){
+        if (key == KeyEvent.VK_UP) {
             movingUp = true;
         }
-        if(key==KeyEvent.VK_DOWN){
+        if (key == KeyEvent.VK_DOWN) {
             movingDown = true;
         }
+        if (key == KeyEvent.VK_SPACE) {
+            dropPresent();  // Solta um presente quando a barra de espaço é pressionada
+        }
     }
+
     @Override
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if (key==KeyEvent.VK_UP) {
+        if (key == KeyEvent.VK_UP) {
             movingUp = false;
         }
         if (key == KeyEvent.VK_DOWN) {
             movingDown = false;
         }
     }
+
     @Override
     public void keyTyped(KeyEvent e) {
     }
+
     public static void main(String[] args) {
         GeneralPathAirPlane gp = new GeneralPathAirPlane();
         gp.setSize(470, 500);
